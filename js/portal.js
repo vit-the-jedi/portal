@@ -59,14 +59,14 @@ for (const [name, layerConfig] of Object.entries(config.layers)) {
   newLayer.config = layerConfig;
   createPortalLayer(newLayer);
 }
-const currentLayer = document.querySelector(".current-layer");
-const scale =
-  currentLayer.getBoundingClientRect().width / currentLayer.offsetWidth;
 //change portal layers
 let interval = null;
 const changePortalLayerHandler = (closePortal) => {
   if (!interval) {
-    if (scale < 1) {
+    const currentLayer = document.querySelector(".current-layer");
+    const scale =
+      currentLayer.getBoundingClientRect().width / currentLayer.offsetWidth;
+    if (scale < 1 || closePortal) {
       interval = setInterval(portalLayerAnimation, 150, closePortal);
     } else {
       changePortalLayer();
@@ -76,9 +76,11 @@ const changePortalLayerHandler = (closePortal) => {
 };
 let count = 0;
 const portalLayerAnimation = (closePortal) => {
-  const layer = document.querySelector(".current-layer");
-  console.log(closePortal);
   if (!closePortal) {
+    const layer = document.querySelector(".current-layer");
+    const scale = (
+      layer.getBoundingClientRect().width / layer.offsetWidth
+    ).toFixed(1);
     layer.style.transform = `scale(0.${count})`;
     const clipPathNum = count >= 90 ? count : count / 2;
     layer.style.clipPath = `circle(${clipPathNum}%)`;
@@ -88,18 +90,20 @@ const portalLayerAnimation = (closePortal) => {
       layer.style.transform = `scale(1)`;
       count = 0;
     }
-  } else {
-    //🛑NOT WORKING
-    //need to get initial scale of current portal and subtract from it
-    count = scale;
-    console.log(scale);
-    const clipPathNum = count == 1 ? count * 10 : count / 2;
-    layer.style.clipPath = `circle(${clipPathNum}%)`;
+  } else if (closePortal) {
+    const layer = document.querySelector(".current-layer");
+    const scale = (
+      layer.getBoundingClientRect().width / layer.offsetWidth
+    ).toFixed(1);
+
+    count = scale * 100;
     count -= 10;
+    const clipPathNum = count <= 40 ? count : count / 2;
+    layer.style.clipPath = `circle(${clipPathNum}%)`;
+    layer.style.transform = `scale(0.${count})`;
     if (count == 0) {
       stopPortalLayerAnimation();
       layer.style.transform = `scale(0)`;
-      count = 100;
     }
   }
 };
@@ -109,6 +113,8 @@ const stopPortalLayerAnimation = () => {
 };
 const changePortalLayer = () => {
   const portalLayers = [...document.querySelectorAll(".portal-layer")];
+  //need to re-evaluate the current layer bc DOM has been updated
+  const currentLayer = document.querySelector(".current-layer");
   const index = portalLayers.indexOf(currentLayer);
   currentLayer.classList.remove("current-layer");
   if (index + 1 < portalLayers.length) {
@@ -140,6 +146,9 @@ const trackPortalMouseEv = (event) => {
 //store drag event coords
 const allEventCoords = {};
 const mouseMoveHandler = (e) => {
+  const currentLayer = document.querySelector(".current-layer");
+  const scale =
+    currentLayer.getBoundingClientRect().width / currentLayer.offsetWidth;
   const currentLayerName = currentLayer.getAttribute("name");
   const layers = [...document.querySelectorAll(".portal-layer")];
   const lastLayerName = layers[layers.length - 1].getAttribute("name");
