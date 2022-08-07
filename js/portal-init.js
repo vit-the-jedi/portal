@@ -1,5 +1,28 @@
 "use strict";
 
+const mobileDisclaimer = () => {
+  const disclaimerAppended = document.querySelector("#mobile-disclaimer");
+  const screenSize = window.innerWidth;
+  if (screenSize < 767) {
+    if (!disclaimerAppended) {
+      const mobileDisclaimerDiv = document.createElement("div");
+      mobileDisclaimerDiv.textContent = `🚧 Sorry, but currently this experiment only works on desktop. To experience this project, please come back on a larger device. Mobile support is coming soon! 🚧`;
+      mobileDisclaimerDiv.id = "mobile-disclaimer";
+      mobileDisclaimerDiv.classList.add("banner");
+      document.body.prepend(mobileDisclaimerDiv);
+    } else {
+      disclaimerAppended.style.display = "block";
+    }
+  } else {
+    if (disclaimerAppended) {
+      disclaimerAppended.style.display = "none";
+    }
+  }
+};
+
+window.addEventListener("load", mobileDisclaimer);
+window.addEventListener("resize", mobileDisclaimer);
+
 const config = {
   layers: {
     layer1: {
